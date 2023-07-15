@@ -1,4 +1,5 @@
 let todoList = [];
+let editId = -1;
 
 let localStorageList = localStorage.getItem("todo_list");
 if (localStorageList === null || localStorageList === "") {
@@ -17,7 +18,6 @@ if (localStorageList === null || localStorageList === "") {
         });
 } else {
     fetchTodoListFromLocalStorage(localStorageList);
-
 }
 
 function fetchTodoListFromLocalStorage(localStorageList) {
@@ -40,6 +40,19 @@ function addTaskToList() {
     }
 }
 
+function editTaskId(id) {
+    editId = id;
+    renderList();
+}
+
+function updateTaskToList(id) {
+    editId = -1;
+    const editTaskInputField = document.getElementById("edit_task_input_field")
+    const task = todoList.find(task => task.id === id);
+    task.taskName = editTaskInputField.value.trim();
+    renderList();
+}
+
 function removeTaskFromListWithId(id) {
     todoList = todoList.filter(task => task.id !== id);
     renderList();
@@ -51,7 +64,41 @@ function renderList() {
 
     todoList.forEach(task => {
         const li = document.createElement("li");
-        li.innerHTML = task.taskName + '<img src="assets/delete.png" alt="Delete Task" onClick=removeTaskFromListWithId(' + task.id + ')>';
+
+        const actionsDiv = document.createElement('div');
+        const deleteTask = document.createElement('img');
+        deleteTask.setAttribute('src', 'assets/delete.png');
+        deleteTask.setAttribute('alt', 'Delete Task');
+        deleteTask.setAttribute('onClick', `removeTaskFromListWithId(${task.id})`);
+
+        if (editId === task.id) {
+            const input = document.createElement('input');
+            input.setAttribute('type', 'text');
+            input.setAttribute('id', 'edit_task_input_field');
+            input.setAttribute('placeholder', 'Enter task name');
+            input.setAttribute('value', task.taskName);
+
+            const updateTask = document.createElement('img');
+            updateTask.setAttribute('src', 'assets/update.png');
+            updateTask.setAttribute('alt', 'Update Task');
+            updateTask.setAttribute('onClick', `updateTaskToList(${task.id})`);
+            
+            li.appendChild(input);
+            actionsDiv.appendChild(updateTask);
+        } else {
+            const text = document.createElement('p');
+            text.textContent = task.taskName;
+
+            const editTask = document.createElement('img');
+            editTask.setAttribute('src', 'assets/edit.png');
+            editTask.setAttribute('alt', 'Edit Task');
+            editTask.setAttribute('onClick', `editTaskId(${task.id})`);
+            
+            li.appendChild(text);
+            actionsDiv.appendChild(editTask);
+        }
+        actionsDiv.appendChild(deleteTask);
+        li.appendChild(actionsDiv);
         taskListElement.appendChild(li);
     });
     storeTodoListOnLocalStorage();
