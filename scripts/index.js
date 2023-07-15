@@ -1,16 +1,33 @@
 let todoList = [];
 
-fetch('https://jsonplaceholder.typicode.com/todos')
-    .then(response => response.json())
-    .then(data => {
-        data.forEach(item => {
-            todoList.push({ taskName: item["title"], id: item["id"] });
+let localStorageList = localStorage.getItem("todo_list");
+if (localStorageList === null || localStorageList === "") {
+    let count = 1;
+    fetch('https://jsonplaceholder.typicode.com/todos')
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(item => {
+                todoList.push({ taskName: item["title"], id: count });
+                count++;
+            });
+            renderList();
+        })
+        .catch(error => {
+            console.error('Error: ', error);
         });
-        renderList();
-    })
-    .catch(error => {
-        console.error('Error: ', error);
-    });
+} else {
+    fetchTodoListFromLocalStorage(localStorageList);
+
+}
+
+function fetchTodoListFromLocalStorage(localStorageList) {
+    todoList = JSON.parse(localStorageList);
+    renderList();
+}
+
+function storeTodoListOnLocalStorage() {
+    localStorage.setItem("todo_list", JSON.stringify(todoList));
+}
 
 function addTaskToList() {
     const taskInputField = document.getElementById("task_input_field")
@@ -37,7 +54,7 @@ function renderList() {
         li.innerHTML = task.taskName + '<img src="assets/delete.png" alt="Delete Task" onClick=removeTaskFromListWithId(' + task.id + ')>';
         taskListElement.appendChild(li);
     });
+    storeTodoListOnLocalStorage();
 }
 
 document.getElementById("save_task_button").addEventListener("click", addTaskToList);
-renderList();
