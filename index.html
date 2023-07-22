@@ -18,16 +18,14 @@
         <h1>Todo List</h1>
         <div class="add_task_container">
             <input type="text" id="add_task_input_field" placeholder="Task name" class="add_task_input_container">
-            <ul id="add_task_tags_list" class="add_task_tags_ul">
-                <!-- <li>Manan<img src="assets/ic_close.png" alt="Close"></li> -->
-            </ul>
+            <ul id="add_task_tags_list" class="add_task_tags_ul"></ul>
             <div class="add_task_feature_container">
                 <input type="date" id="add_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
                 <select id="add_task_priority_dropdown">
-                    <option value="null">Priority</option>
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
+                    <option value="">Priority</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
                 </select>
                 <div>
                     <img src="assets/reminder.svg" alt="Reminder">
@@ -35,10 +33,10 @@
                 </div>
                 <select id="add_task_category_dropdown">
                     <option value="null">Category</option>
-                    <option value="personal">Personal</option>
-                    <option value="home">Home</option>
-                    <option value="work">Work</option>
-                    <option value="other">Other</option>
+                    <option value="Personal">Personal</option>
+                    <option value="Home">Home</option>
+                    <option value="Work">Work</option>
+                    <option value="Other">Other</option>
                 </select>
             </div>
             <div class="add_task_tags_container">
@@ -47,7 +45,138 @@
             </div>
             <button id="add_task_save_button">Save</button>
         </div>
-        <ul id="task_list"></ul>
+        <li class="task_list_ul_li">
+            <input class="task_list_checkbox" type="checkbox" id="task_list_checkbox">
+            <div class="task_list_main_content">
+                <p class="task_list_main_content_name">24 July ko kaise bhi kerke cogoport mai select hona h</p>
+                <ul class="task_list_main_content_tags_ul">
+                    <li class="task_list_main_content_tags_li">Tag 1</li>
+                    <li class="task_list_main_content_tags_li">Tag 2</li>
+                    <li class="task_list_main_content_tags_li">Tag 3</li>
+                    <li class="task_list_main_content_tags_li">Tag 4</li>
+                    <li class="task_list_main_content_tags_li">Tag 5</li>
+                    <li class="task_list_main_content_tags_li">Tag 6</li>
+                </ul>
+            </div>
+            <div class="task_list_right_content">
+                <div class="task_list_actions">
+                    <img src="assets/edit.png" alt="Edit Icon">
+                    <img src="assets/delete.png" alt="Delete Icon">
+                    <img src="assets/ic_add.svg" alt="Plus Icon">
+                </div>
+                <p class="task_list_right_content_due_date">24/7/2023 11:59 PM</p>
+                <div class="task_list_actions">
+                    <p class="task_list_right_content_category">Home</p>
+                    <p class="task_list_right_content_priority">Low</p>
+                </div>
+            </div>
+        </li>
+        <div class="add_task_container">
+            <input type="text" id="edit_task_input_field" placeholder="Task name" class="add_task_input_container">
+            <ul id="edit_task_tags_list" class="add_task_tags_ul"></ul>
+            <div class="add_task_feature_container">
+                <input type="date" id="edit_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
+                <select id="edit_task_priority_dropdown">
+                    <option value="">Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <div>
+                    <img src="assets/reminder.svg" alt="Reminder">
+                    <p>Reminders</p>
+                </div>
+                <select id="edit_task_category_dropdown">
+                    <option value="null">Category</option>
+                    <option value="personal">Personal</option>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="add_task_tags_container">
+                <input type="text" id="edit_task_tags_input_field" placeholder="Add Tags">
+                <button id="edit_task_tags_save_button">Add</button>
+            </div>
+            <button id="edit_task_save_button">Update</button>
+        </div>
+        <div class="add_task_container">
+            <input type="text" id="add_sub_task_input_field" placeholder="Task name" class="add_task_input_container">
+            <ul id="add_sub_task_tags_list" class="add_task_tags_ul"></ul>
+            <div class="add_task_feature_container">
+                <input type="date" id="add_sub_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
+                <select id="add_sub_task_priority_dropdown">
+                    <option value="">Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <div>
+                    <img src="assets/reminder.svg" alt="Reminder">
+                    <p>Reminders</p>
+                </div>
+            </div>
+            <div class="add_task_tags_container">
+                <input type="text" id="add_sub_task_tags_input_field" placeholder="Add Tags">
+                <button id="add_sub_task_tags_save_button">Add</button>
+            </div>
+            <button id="add_sub_task_save_button">Save</button>
+        </div>
+        <li class="task_sub_list_li">
+            <input class="task_list_checkbox" type="checkbox" id="task_list_checkbox">
+            <div class="task_list_main_content">
+                <p class="task_list_main_content_name">24 July ko kaise bhi kerke cogoport mai select hona h</p>
+                <ul class="task_list_main_content_tags_ul">
+                    <li class="task_list_main_content_tags_li">Tag 1</li>
+                    <li class="task_list_main_content_tags_li">Tag 2</li>
+                    <li class="task_list_main_content_tags_li">Tag 3</li>
+                    <li class="task_list_main_content_tags_li">Tag 4</li>
+                    <li class="task_list_main_content_tags_li">Tag 5</li>
+                    <li class="task_list_main_content_tags_li">Tag 6</li>
+                </ul>
+            </div>
+            <div class="task_list_right_content">
+                <div class="task_list_actions">
+                    <img src="assets/edit.png" alt="Edit Icon">
+                    <img src="assets/delete.png" alt="Delete Icon">
+                </div>
+                <p class="task_list_right_content_due_date">24/7/2023 11:59 PM</p>
+                <p class="task_list_right_content_category">Low</p>
+            </div>
+        </li>
+        <div class="add_task_container">
+            <input type="text" id="edit_sub_task_input_field" placeholder="Task name" class="add_task_input_container">
+            <ul id="edit_sub_task_tags_list" class="add_task_tags_ul"></ul>
+            <div class="add_task_feature_container">
+                <input type="date" id="edit_sub_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
+                <select id="edit_sub_task_priority_dropdown">
+                    <option value="">Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <div>
+                    <img src="assets/reminder.svg" alt="Reminder">
+                    <p>Reminders</p>
+                </div>
+                <select id="edit_sub_task_category_dropdown">
+                    <option value="null">Category</option>
+                    <option value="personal">Personal</option>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="add_task_tags_container">
+                <input type="text" id="edit_sub_task_tags_input_field" placeholder="Add Tags">
+                <button id="edit_sub_task_tags_save_button">Add</button>
+            </div>
+            <button id="edit_sub_task_save_button">Update</button>
+        </div>
+        <ul class="task_list_ul" id="task_list">
+            <ul class="task_list_ul" id="sub_task_list">
+            </ul>
+        </ul>
     </div>
 
     <script src="scripts/index.js"></script>
