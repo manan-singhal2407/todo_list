@@ -37,6 +37,7 @@ h1 {
     border: 2px solid #aaaaaa;
     border-radius: 20px;
     padding: 10px;
+    margin-bottom: 10px;
 }
 
 .add_task_input_container {
