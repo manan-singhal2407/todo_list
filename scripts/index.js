@@ -1,22 +1,12 @@
 let todoList = [];
 let editId = -1;
 
+const datePicker = document.getElementById("datePicker");
+const today = new Date().toISOString().split('T')[0];
+datePicker.min = today;
+
 let localStorageList = localStorage.getItem("todo_list");
-if (localStorageList === null || localStorageList === "") {
-    let count = 1;
-    fetch('https://jsonplaceholder.typicode.com/todos')
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(item => {
-                todoList.push({ taskName: item["title"], id: count });
-                count++;
-            });
-            renderList();
-        })
-        .catch(error => {
-            console.error('Error: ', error);
-        });
-} else {
+if (localStorageList !== null || localStorageList === "") {
     fetchTodoListFromLocalStorage(localStorageList);
 }
 
@@ -56,6 +46,12 @@ function updateTaskToList(id) {
 function removeTaskFromListWithId(id) {
     todoList = todoList.filter(task => task.id !== id);
     renderList();
+}
+
+function showDatePicker() {
+    var picker = new Date().datepicker();
+    picker.setDate(new Date());
+    picker.open();
 }
 
 function renderList() {
@@ -105,3 +101,4 @@ function renderList() {
 }
 
 document.getElementById("save_task_button").addEventListener("click", addTaskToList);
+renderList();

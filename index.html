@@ -16,9 +16,36 @@
 <body>
     <div class="page_container">
         <h1>Todo List</h1>
-        <div>
-            <input type="text" id="task_input_field" placeholder="Enter task name">
-            <button id="save_task_button">Save</button>
+        <div class="add_task_container">
+            <input type="text" id="add_task_input_field" placeholder="Task name" class="add_task_input_container">
+            <ul id="add_task_tags_list" class="add_task_tags_ul">
+                <!-- <li>Manan<img src="assets/ic_close.png" alt="Close"></li> -->
+            </ul>
+            <div class="add_task_feature_container">
+                <input type="date" id="add_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
+                <select id="add_task_priority_dropdown">
+                    <option value="null">Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <div>
+                    <img src="assets/reminder.svg" alt="Reminder">
+                    <p>Reminders</p>
+                </div>
+                <select id="add_task_category_dropdown">
+                    <option value="null">Category</option>
+                    <option value="personal">Personal</option>
+                    <option value="home">Home</option>
+                    <option value="work">Work</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div class="add_task_tags_container">
+                <input type="text" id="add_task_tags_input_field" placeholder="Add Tags">
+                <button id="add_task_tags_save_button">Add</button>
+            </div>
+            <button id="add_task_save_button">Save</button>
         </div>
         <ul id="task_list"></ul>
     </div>

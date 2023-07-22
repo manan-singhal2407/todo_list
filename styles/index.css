@@ -30,8 +30,166 @@ h1 {
     font-weight: 700;
 }
 
-input {
-    width: 250px;
+.add_task_container {
+    width: 500px;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid #aaaaaa;
+    border-radius: 20px;
+    padding: 10px;
+}
+
+.add_task_input_container {
+    width: 480px;
+    height: 40px;
+    padding: 10px;
+    border: 2px solid #aaaaaa;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    outline: none;
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+.add_task_tags_ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.add_task_tags_ul  li {
+    display: flex;
+    margin: 5px;
+    width: fit-content;
+    height: 28px;
+    padding: 0 10px;
+    background-color: #ffffff;
+    border: 2px solid #aaaaaa;
+    border-radius: 8px;
+    color: #aaaaaa;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.add_task_feature_container {
+    display: flex;
+}
+
+.add_task_feature_container input {
+    display: flex;
+    flex-direction: row-reverse;
+    width: fit-content;
+    height: 32px;
+    padding: 0 10px;
+    background-color: #ffffff;
+    border: 2px solid #aaaaaa;
+    border-radius: 8px;
+    color: #aaaaaa;
+    margin: 5px;
+    outline: none;
+    cursor: pointer;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.add_task_feature_container input::before {
+    color: #aaaaaa;
+}
+
+.add_task_feature_container select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    background-color: #ffffff;
+    border: 2px solid #aaaaaa;
+    border-radius: 8px;
+    margin: 5px;
+    padding: 0 15px;
+    color: #aaaaaa;
+    outline: none;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.add_task_feature_container::-ms-expand select {
+    display: none;
+}
+
+.add_task_feature_container div {
+    display: flex;
+    width: fit-content;
+    height: 32px;
+    padding: 0 10px;
+    align-items: center;
+    background-color: #ffffff;
+    border: 2px solid #aaaaaa;
+    border-radius: 8px;
+    margin: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+.add_task_tags_container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.add_task_tags_container input {
+    width: 320px;
+    height: 40px;
+    padding: 10px;
+    border: 2px solid #aaaaaa;
+    border-radius: 10px;
+    outline: none;
+    font-family: var(--font-family);
+    font-weight: 700;
+}
+
+.add_task_container button {
+    width: 100px;
+    height: 32px;
+    color: #ffffff;
+    margin: 10px auto;
+    background: #E46962;
+    font-family: var(--font-family);
+    font-weight: 700;
+    font-size: 14px;
+    border: 0px;
+    border-radius: 10px;
+    cursor: pointer;
+    padding: 4px 16px;
+    outline: none;
+}
+
+
+
+
+
+
+
+
+
+
+.add_task_container p {
+    font-family: var(--font-family);
+    font-weight: 700;
+    color: #aaaaaa;
+    margin-left: 6px;
+    font-size: 13.5px;
+}
+
+
+
+
+
+/* input {
+    width: 480px;
     height: 40px;
     padding: 10px;
     border: 2px solid #aaaaaa;
@@ -39,28 +197,28 @@ input {
     margin-right: 50px;
     outline: none;
     font-family: var(--font-family);
-    font-weight: 700;
-}
+    font-weight: 700; */
+/* } */
 
 input:focus {
     border: 2px solid #000000;
 }
 
-button {
+/* button {
     width: 100px;
     height: 32px;
     color: #ffffff;
     align-items: center;
     background: #E46962;
     font-family: var(--font-family);
-    font-weight: 700;
+    font-weight: 700;s
     font-size: 14px;
     border: 0px;
     border-radius: 10px 10px;
     cursor: pointer;
     padding: 4px 16px;
     outline: none;
-}
+} */
 
 ul {
     list-style-type: none;
