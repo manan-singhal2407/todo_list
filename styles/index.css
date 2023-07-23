@@ -205,6 +205,23 @@ input:focus {
     background-color: antiquewhite;
 }
 
+.activity_list_ul_li {
+    display: flex;
+    width: 490px;
+    margin-bottom: 20px;
+    align-items: start;
+    background-color: antiquewhite;
+    justify-content: space-between;
+}
+
+.activity_list_ul_li p {
+    font-family: var(--font-family);
+    font-weight: 700;
+    color: #aaaaaa;
+    margin-left: 6px;
+    font-size: 13px;
+}
+
 .task_sub_list_li {
     display: flex;
     width: 450px;

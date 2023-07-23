@@ -6,6 +6,7 @@ const filterDatePickerFrom = document.getElementById("filter_date_picker_from");
 const filterDatePickerTo = document.getElementById("filter_date_picker_to");
 const sortingDropdown = document.getElementById("sorting_dropdown");
 const filterCategoryDropdown = document.getElementById("filter_category_dropdown");
+const showSpecificDropdown = document.getElementById("show_specific_dropdown");
 
 let activityList = [];
 let todoList = [];
@@ -26,21 +27,22 @@ let filterCategory = "";
 let search = "";
 let filterDateFrom = null;
 let filterDateTo = null;
+let showType = "";
 
 class LogType {
-    static TASK_ADDED;
-    static SUB_TASK_ADDED;
-    static TASK_DELETED;
-    static TASK_DELETED_FAILED;
-    static TASK_UPDATED;
-    static TASK_MARK_AS_DONE;
-    static TASK_MARK_AS_DONE_FAILED;
-    static TASK_MARK_AS_UNDONE;
-    static SUB_TASK_DELETED;
-    static SUB_TASK_UPDATED;
-    static SUB_TASK_MARK_AS_DONE;
-    static SUB_TASK_MARK_AS_UNDONE;
-    static SUB_TASK_MARK_AS_UNDONE_FAILED;
+    static TASK_ADDED = "Added task";
+    static SUB_TASK_ADDED = "Added sub-task";
+    static TASK_DELETED = "Task Deleted";
+    static TASK_DELETED_FAILED = "Failed to delete task";
+    static TASK_UPDATED = "Task Updated";
+    static TASK_MARK_AS_DONE = "Mark Task as Done";
+    static TASK_MARK_AS_DONE_FAILED = "Failed to mark done";
+    static TASK_MARK_AS_UNDONE = "Mark Task as Undone";
+    static SUB_TASK_DELETED = "Sub-task Deleted";
+    static SUB_TASK_UPDATED = "Sub-task Updated";
+    static SUB_TASK_MARK_AS_DONE = "Sub-task Mark as done";
+    static SUB_TASK_MARK_AS_UNDONE = "Sub-task Mark as undone";
+    static SUB_TASK_MARK_AS_UNDONE_FAILED = "Failed to mark Sub-task as undone";
 }
 
 // todo mark done code will be done from remove task -> same way
@@ -337,6 +339,7 @@ function itemLayout(li, task) {
     checkboxInput.setAttribute('type', 'checkbox');
     checkboxInput.classList.add("task_list_checkbox");
     checkboxInput.setAttribute('onClick', `changeMarkTaskPosition(${task.id})`);
+    checkboxInput.checked = task.mark_done;
 
     const mainContent = document.createElement('div');
     mainContent.classList.add("task_list_main_content");
@@ -581,10 +584,14 @@ function renderList() {
     const taskListElement = document.getElementById("task_list");
     taskListElement.innerHTML = "";
 
+    console.log(todoList);
     var showSubTask = true;
     var showDoneTask = false;
-    if (showDoneTask || sorting !== "" || search !== "" || filterDateFrom !== null || filterDateTo !== null) {
+    if (showDoneTask || sorting !== "" || search !== "" || filterDateFrom !== null || filterDateTo !== null || showType !== "") {
         showSubTask = false;
+    }
+    if (showType === "MAD") {
+        showDoneTask = true;
     }
 
     var tasksToShow = [...todoList];
@@ -602,6 +609,7 @@ function renderList() {
         }
     }
     tasksToShow = tasksToShow.filter(task => !removeTasks.includes(task));
+    tasksToShow = tasksToShow.filter(task => task.mark_done === showDoneTask);
     if (showSubTask) {
         tasksToShow = tasksToShow.filter(task => task.main_task_id === -1);
     }
@@ -699,47 +707,54 @@ function renderActivityList() {
     const activityListElement = document.getElementById("activity_list");
     activityListElement.innerHTML = "";
 
-    // const tasksToShow = todoList.filter(task => !task.mark_done && task.main_task_id === -1);
-    // tasksToShow.forEach(task => {
-    //     if (editId === task.id) {
-    //         const div = document.createElement("div");
-    //         editOrAddSubTaskLayout(div, task, true);
-    //         taskListElement.appendChild(div);
-    //     } else {
-    //         const li = document.createElement("li");
-    //         li.classList.add("task_list_ul_li");
-    //         itemLayout(li, task);
-    //         taskListElement.appendChild(li);
-    //     }
+    const li = document.createElement("li");
+    li.classList.add("activity_list_ul_li");
 
-    //     if (addSubTaskId === task.id) {
-    //         const div = document.createElement("div");
-    //         editOrAddSubTaskLayout(div, task, false);
-    //         taskListElement.appendChild(div);
-    //     }
+    const mainContentName = document.createElement('p');
+    mainContentName.classList.add("task_list_main_content_name");
+    mainContentName.textContent = "MM/DD/YY, HH:MM";
+    const mainContentName1 = document.createElement('p');
+    mainContentName1.classList.add("task_list_main_content_name");
+    mainContentName1.textContent = "Type";
+    const mainContentName2 = document.createElement('p');
+    mainContentName2.classList.add("task_list_main_content_name");
+    mainContentName2.textContent = `TaskName(Id,Task_Id), Task_Id !=-1 in case of subtask`;
 
-    //     task.sub_task.forEach(subTaskId => {
-    //         const todoListItem = todoList.find((item) => item.id === subTaskId);
-    //         if (!todoListItem.mark_done) {
-    //             if (editId === todoListItem.id) {
-    //                 const sub_div = document.createElement("div");
-    //                 editOrAddSubTaskLayout(sub_div, todoListItem, true);
-    //                 taskListElement.appendChild(sub_div);
-    //             } else {
-    //                 const sub_li = document.createElement("li");
-    //                 sub_li.classList.add("task_sub_list_li");
-    //                 itemLayout(sub_li, todoListItem);
-    //                 taskListElement.appendChild(sub_li);
-    //             }
-    //         }
-    //     });
-    // });
+    li.appendChild(mainContentName);
+    li.appendChild(mainContentName1);
+    li.appendChild(mainContentName2);
+
+    activityListElement.appendChild(li);
+
+    var activityToShow = [...activityList];
+    activityToShow.reverse();
+    activityToShow.forEach(activity => {
+        const li = document.createElement("li");
+        li.classList.add("activity_list_ul_li");
+
+        const mainContentName = document.createElement('p');
+        mainContentName.classList.add("task_list_main_content_name");
+        mainContentName.textContent = activity.created_at;
+        const mainContentName1 = document.createElement('p');
+        mainContentName1.classList.add("task_list_main_content_name");
+        mainContentName1.textContent = activity.type;
+        const mainContentName2 = document.createElement('p');
+        mainContentName2.classList.add("task_list_main_content_name");
+        mainContentName2.textContent = activity.task_name + "(" + activity.id + ", " + activity.main_task_id + ")";
+
+        li.appendChild(mainContentName);
+        li.appendChild(mainContentName1);
+        li.appendChild(mainContentName2);
+
+        activityListElement.appendChild(li);
+    });
     localStorage.setItem("activity_list", JSON.stringify(activityList));
 }
 
 function clearFilterOption() {
     sorting = "";
     filterCategory = "";
+    showType = "";
     search = "";
     filterDateFrom = null;
     filterDateTo = null;
@@ -748,6 +763,7 @@ function clearFilterOption() {
     filterDatePickerTo.value = null;
     sortingDropdown.selectedIndex = 0;
     filterCategoryDropdown.selectedIndex = 0;
+    showSpecificDropdown.selectedIndex = 0;
     renderList();
 }
 
@@ -788,12 +804,18 @@ filterCategoryDropdown.addEventListener("change", function () {
     filterCategory = this.value;
     renderList();
 });
+showSpecificDropdown.addEventListener("change", function() {
+    showType = this.value;
+    renderList();
+})
 document.getElementById("add_task_tags_save_button").addEventListener("click", addTaskTagsToList);
 document.getElementById("add_task_save_button").addEventListener("click", addTaskToList);
 document.getElementById("search_clear_button").addEventListener("click", clearFilterOption);
 
 if (localStorage.getItem("activity_list") !== null) {
     activityList = JSON.parse(localStorage.getItem("activity_list"));
+    // activityList.splice(0, activityList.length);
+    // localStorage.setItem("activity_list", JSON.stringify(activityList));
 }
 
 let localStorageList = localStorage.getItem("todo_list");
