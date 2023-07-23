@@ -276,20 +276,20 @@ function changeMarkTaskPosition(id) {
     const todoListItem = todoList.find((item) => item.id === id);
     if (todoListItem.main_task_id === -1) {
         if (todoListItem.sub_task.length !== 0) {
-            
+
         } else {
 
         }
     } else {
-        
+
     }
 
 
 
     activityList.push({
-        type: todoListItem.mark_done 
-        ? todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_UNDONE : LogType.SUB_TASK_MARK_AS_UNDONE
-        : todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_DONE : LogType.SUB_TASK_MARK_AS_DONE,
+        type: todoListItem.mark_done
+            ? todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_UNDONE : LogType.SUB_TASK_MARK_AS_UNDONE
+            : todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_DONE : LogType.SUB_TASK_MARK_AS_DONE,
         created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
         id: id,
         task_name: todoListItem.task_name,
@@ -568,6 +568,15 @@ function editOrAddSubTaskLayout(div, task, isEditTask) {
     div.appendChild(editOrAddSubTaskSaveButton);
 }
 
+function checkIfSearchWordsInTask(searchWords, contentTask) {
+    for (const word of searchWords) {
+        if (!contentTask.includes(word)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 function renderList() {
     const taskListElement = document.getElementById("task_list");
     taskListElement.innerHTML = "";
@@ -579,6 +588,20 @@ function renderList() {
     }
 
     var tasksToShow = [...todoList];
+    var removeTasks = [];
+    if (search !== "") {
+        const searchWords = search.toLowerCase().trim().split(" ");
+        for (const task of tasksToShow) {
+            var contentTask = task.task_name.toLowerCase() + " " + task.category.toLowerCase() + " " + task.priority.toLowerCase();
+            task.tags.forEach(tag => {
+                contentTask += " " + tag.toLowerCase();
+            });
+            if (!checkIfSearchWordsInTask(searchWords, contentTask)) {
+                removeTasks.push(task);
+            }
+        }
+    }
+    tasksToShow = tasksToShow.filter(task => !removeTasks.includes(task));
     if (showSubTask) {
         tasksToShow = tasksToShow.filter(task => task.main_task_id === -1);
     }
