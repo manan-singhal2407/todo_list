@@ -45,41 +45,8 @@ class LogType {
     static SUB_TASK_MARK_AS_UNDONE_FAILED = "Failed to mark Sub-task as undone";
 }
 
-// todo mark done code will be done from remove task -> same way
-
-/* 
-TodoList Table: {
-    task_name: String,
-    id: Int,
-    tags: List<String>,
-    category: String,
-    reminder: List<Reminder>,
-    due_date: Date,
-    priority: String,
-    created_at: DateTime,
-    sub_task: List<Int/Id>,
-    mark_done: Boolean,
-    main_task_id: Int,
-}
-
-Activity Log Table: {
-    type: String,
-    created_at: Int,
-    id: Int,
-    taskName: String,
-    main_task_id: Int,
-}
-
-Reminder Table: {
-    date: String,
-    time: String
-}
-*/
-
 function fetchTodoListFromLocalStorage(localStorageList) {
     todoList = JSON.parse(localStorageList);
-    // todoList.splice(0, todoList.length);
-    // storeTodoListOnLocalStorage();
     renderList();
 }
 
@@ -270,7 +237,6 @@ function updateTaskToList(id, isEditTask) {
     editOrSubTaskPriority = "";
     document.getElementById('edit_and_new_sub_task_date_picker').value = '';
     document.getElementById('edit_and_new_sub_task_priority_dropdown').selectedIndex = 0;
-    document.getElementById('edit_and_new_sub_task_category_dropdown').selectedIndex = 0;
     renderList();
 }
 
@@ -278,26 +244,86 @@ function changeMarkTaskPosition(id) {
     const todoListItem = todoList.find((item) => item.id === id);
     if (todoListItem.main_task_id === -1) {
         if (todoListItem.sub_task.length !== 0) {
-
+            if (todoListItem.mark_done) {
+                todoListItem.mark_done = !todoListItem.mark_done;
+                activityList.push({
+                    type: LogType.TASK_MARK_AS_UNDONE,
+                    created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                    id: id,
+                    task_name: todoListItem.task_name,
+                    main_task_id: -1
+                });
+            } else {
+                var canMarkAsDone = true;
+                todoListItem.sub_task.forEach(sub_id => {
+                    const subTask = todoList.find((item) => item.id === sub_id);
+                    if (!subTask.mark_done) {
+                        canMarkAsDone = false;
+                    }
+                });
+                if (canMarkAsDone) {
+                    todoListItem.mark_done = !todoListItem.mark_done;
+                    activityList.push({
+                        type: LogType.TASK_MARK_AS_DONE,
+                        created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                        id: id,
+                        task_name: todoListItem.task_name,
+                        main_task_id: -1
+                    });
+                } else {
+                    activityList.push({
+                        type: LogType.TASK_MARK_AS_DONE_FAILED,
+                        created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                        id: id,
+                        task_name: todoListItem.task_name,
+                        main_task_id: -1
+                    });
+                    alert("You can't mark a task with active sub task");
+                }
+            }
         } else {
-
+            todoListItem.mark_done = !todoListItem.mark_done;
+            activityList.push({
+                type: todoListItem.mark_done ? LogType.TASK_MARK_AS_DONE : LogType.TASK_MARK_AS_UNDONE,
+                created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                id: id,
+                task_name: todoListItem.task_name,
+                main_task_id: -1
+            });
         }
     } else {
-
+        if (todoListItem.mark_done) {
+            const mainTask = todoList.find((item) => item.id === todoListItem.main_task_id);
+            if (mainTask.mark_done) {
+                activityList.push({
+                    type: LogType.SUB_TASK_MARK_AS_UNDONE_FAILED,
+                    created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                    id: todoListItem.id,
+                    task_name: todoListItem.task_name,
+                    main_task_id: mainTask.id
+                });
+                alert("You can't unmark a sub-task with a main task as marked");
+            } else {
+                todoListItem.mark_done = !todoListItem.mark_done;
+                activityList.push({
+                    type: LogType.SUB_TASK_MARK_AS_UNDONE,
+                    created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                    id: id,
+                    task_name: todoListItem.task_name,
+                    main_task_id: mainTask.id
+                });
+            }
+        } else {
+            todoListItem.mark_done = !todoListItem.mark_done;
+            activityList.push({
+                type: LogType.SUB_TASK_MARK_AS_DONE,
+                created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                id: id,
+                task_name: todoListItem.task_name,
+                main_task_id: todoListItem.main_task_id
+            });
+        }
     }
-
-
-
-    activityList.push({
-        type: todoListItem.mark_done
-            ? todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_UNDONE : LogType.SUB_TASK_MARK_AS_UNDONE
-            : todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_DONE : LogType.SUB_TASK_MARK_AS_DONE,
-        created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
-        id: id,
-        task_name: todoListItem.task_name,
-        main_task_id: todoListItem.main_task_id
-    });
-    todoListItem.mark_done = !todoListItem.mark_done;
     renderList();
 }
 
@@ -340,6 +366,7 @@ function itemLayout(li, task) {
     checkboxInput.classList.add("task_list_checkbox");
     checkboxInput.setAttribute('onClick', `changeMarkTaskPosition(${task.id})`);
     checkboxInput.checked = task.mark_done;
+    li.appendChild(checkboxInput);
 
     const mainContent = document.createElement('div');
     mainContent.classList.add("task_list_main_content");
@@ -370,16 +397,15 @@ function itemLayout(li, task) {
     rightContentEdit.setAttribute('src', 'assets/edit.png');
     rightContentEdit.setAttribute('alt', 'Edit Task');
     rightContentEdit.setAttribute('onClick', `editTaskId(${task.id})`);
+    rightContentActions.appendChild(rightContentEdit);
 
     const rightContentDelete = document.createElement('img');
     rightContentDelete.setAttribute('src', 'assets/delete.png');
     rightContentDelete.setAttribute('alt', 'Delete Task');
     rightContentDelete.setAttribute('onClick', `removeTaskFromListWithId(${task.id})`);
-
-    rightContentActions.appendChild(rightContentEdit);
     rightContentActions.appendChild(rightContentDelete);
 
-    if (task.main_task_id === -1) {
+    if (task.main_task_id === -1 && !task.mark_done) {
         const rightContentAddSubTask = document.createElement('img');
         rightContentAddSubTask.setAttribute('src', 'assets/ic_add.svg');
         rightContentAddSubTask.setAttribute('alt', 'Add Sub Task');
@@ -394,27 +420,27 @@ function itemLayout(li, task) {
     const rightContentText = document.createElement('div');
     rightContentText.classList.add("task_list_actions");
 
-    const rightContentCategory = document.createElement('p');
-    rightContentCategory.classList.add("task_list_right_content_category");
-    rightContentCategory.textContent = task.category;
+    if (task.main_task_id === -1) {
+        const rightContentCategory = document.createElement('p');
+        rightContentCategory.classList.add("task_list_right_content_category");
+        rightContentCategory.textContent = task.category;
+        rightContentText.appendChild(rightContentCategory);
+    }
 
     const rightContentPriority = document.createElement('p');
     rightContentPriority.classList.add("task_list_right_content_priority");
     rightContentPriority.textContent = task.priority;
-
-    rightContentText.appendChild(rightContentCategory);
     rightContentText.appendChild(rightContentPriority);
 
     rightContent.appendChild(rightContentActions);
     rightContent.appendChild(rightContentDueDate);
     rightContent.appendChild(rightContentText);
 
-    li.appendChild(checkboxInput);
     li.appendChild(mainContent);
     li.appendChild(rightContent);
 }
 
-function editOrAddSubTaskLayout(div, task, isEditTask) {
+function editOrAddSubTaskLayout(div, task, isEditTask, mainTask) {
     div.classList.add("add_task_container");
 
     const editOrAddSubTaskInputName = document.createElement('input');
@@ -474,39 +500,51 @@ function editOrAddSubTaskLayout(div, task, isEditTask) {
     editOrAddSubTaskFeatureReminder.appendChild(editOrAddSubTaskFeatureReminderImg);
     editOrAddSubTaskFeatureReminder.appendChild(editOrAddSubTaskFeatureReminderText);
 
-    const editOrAddSubTaskCategoryPriority = document.createElement('select');
-    editOrAddSubTaskCategoryPriority.setAttribute('id', 'edit_and_new_sub_task_category_dropdown');
-
-    const optionCategory = document.createElement('option');
-    optionCategory.value = "";
-    optionCategory.innerText = "Category";
-
-    const optionPersonal = document.createElement('option');
-    optionPersonal.value = "Personal";
-    optionPersonal.innerText = "Personal";
-
-    const optionHome = document.createElement('option');
-    optionHome.value = "Home";
-    optionHome.innerText = "Home";
-
-    const optionWork = document.createElement('option');
-    optionWork.value = "Work";
-    optionWork.innerText = "Work";
-
-    const optionOther = document.createElement('option');
-    optionOther.value = "Other";
-    optionOther.innerText = "Other";
-
-    editOrAddSubTaskCategoryPriority.appendChild(optionCategory);
-    editOrAddSubTaskCategoryPriority.appendChild(optionPersonal);
-    editOrAddSubTaskCategoryPriority.appendChild(optionHome);
-    editOrAddSubTaskCategoryPriority.appendChild(optionWork);
-    editOrAddSubTaskCategoryPriority.appendChild(optionOther);
-
     editOrAddSubTaskFeatureContainer.appendChild(editOrAddSubTaskFeatureDatePicker);
     editOrAddSubTaskFeatureContainer.appendChild(editOrAddSubTaskFeaturePriority);
     editOrAddSubTaskFeatureContainer.appendChild(editOrAddSubTaskFeatureReminder);
-    editOrAddSubTaskFeatureContainer.appendChild(editOrAddSubTaskCategoryPriority);
+
+    if (mainTask) {
+        const editOrAddSubTaskCategoryPriority = document.createElement('select');
+        editOrAddSubTaskCategoryPriority.setAttribute('id', 'edit_and_new_sub_task_category_dropdown');
+    
+        const optionCategory = document.createElement('option');
+        optionCategory.value = "";
+        optionCategory.innerText = "Category";
+    
+        const optionPersonal = document.createElement('option');
+        optionPersonal.value = "Personal";
+        optionPersonal.innerText = "Personal";
+    
+        const optionHome = document.createElement('option');
+        optionHome.value = "Home";
+        optionHome.innerText = "Home";
+    
+        const optionWork = document.createElement('option');
+        optionWork.value = "Work";
+        optionWork.innerText = "Work";
+    
+        const optionOther = document.createElement('option');
+        optionOther.value = "Other";
+        optionOther.innerText = "Other";
+    
+        editOrAddSubTaskCategoryPriority.appendChild(optionCategory);
+        editOrAddSubTaskCategoryPriority.appendChild(optionPersonal);
+        editOrAddSubTaskCategoryPriority.appendChild(optionHome);
+        editOrAddSubTaskCategoryPriority.appendChild(optionWork);
+        editOrAddSubTaskCategoryPriority.appendChild(optionOther);
+        editOrAddSubTaskFeatureContainer.appendChild(editOrAddSubTaskCategoryPriority);
+        if (isEditTask) {
+            optionCategory.selected = task.category === "Category";
+            optionPersonal.selected = task.category === "Personal";
+            optionHome.selected = task.category === "Home";
+            optionWork.selected = task.category === "Work";
+            optionOther.selected = task.category === "Other";
+        }
+        editOrAddSubTaskCategoryPriority.addEventListener("change", function () {
+            editOrSubTaskCategory = this.value;
+        });
+    }
 
     const editOrAddSubTaskTagsContainer = document.createElement('div');
     editOrAddSubTaskTagsContainer.classList.add("add_task_tags_container");
@@ -535,11 +573,6 @@ function editOrAddSubTaskLayout(div, task, isEditTask) {
         optionLow.selected = task.priority === "Low";
         optionMedium.selected = task.priority === "Medium";
         optionHigh.selected = task.priority === "High";
-        optionCategory.selected = task.category === "Category";
-        optionPersonal.selected = task.category === "Personal";
-        optionHome.selected = task.category === "Home";
-        optionWork.selected = task.category === "Work";
-        optionOther.selected = task.category === "Other";
         editOrAddSubTaskSaveButton.textContent = "Update";
         editOrSubTaskTagsList = [...task.tags];
         editOrSubTaskDueDate = task.due_date;
@@ -557,9 +590,6 @@ function editOrAddSubTaskLayout(div, task, isEditTask) {
     });
     editOrAddSubTaskFeaturePriority.addEventListener("change", function () {
         editOrSubTaskPriority = this.value;
-    });
-    editOrAddSubTaskCategoryPriority.addEventListener("change", function () {
-        editOrSubTaskCategory = this.value;
     });
     editOrAddSubTaskTagsSaveButton.setAttribute('onClick', `editOrAddSubTaskTagsToList()`);
     editOrAddSubTaskSaveButton.setAttribute('onClick', `updateTaskToList(${task.id}, ${isEditTask})`);
@@ -666,7 +696,7 @@ function renderList() {
     tasksToShow.forEach(task => {
         if (editId === task.id) {
             const div = document.createElement("div");
-            editOrAddSubTaskLayout(div, task, true);
+            editOrAddSubTaskLayout(div, task, true, true);
             taskListElement.appendChild(div);
         } else {
             const li = document.createElement("li");
@@ -677,7 +707,7 @@ function renderList() {
 
         if (addSubTaskId === task.id) {
             const div = document.createElement("div");
-            editOrAddSubTaskLayout(div, task, false);
+            editOrAddSubTaskLayout(div, task, false, false);
             taskListElement.appendChild(div);
         }
 
@@ -687,7 +717,7 @@ function renderList() {
                 if (!todoListItem.mark_done) {
                     if (editId === todoListItem.id) {
                         const sub_div = document.createElement("div");
-                        editOrAddSubTaskLayout(sub_div, todoListItem, true);
+                        editOrAddSubTaskLayout(sub_div, todoListItem, true, false);
                         taskListElement.appendChild(sub_div);
                     } else {
                         const sub_li = document.createElement("li");
@@ -814,8 +844,6 @@ document.getElementById("search_clear_button").addEventListener("click", clearFi
 
 if (localStorage.getItem("activity_list") !== null) {
     activityList = JSON.parse(localStorage.getItem("activity_list"));
-    // activityList.splice(0, activityList.length);
-    // localStorage.setItem("activity_list", JSON.stringify(activityList));
 }
 
 let localStorageList = localStorage.getItem("todo_list");
