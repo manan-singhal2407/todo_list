@@ -15,42 +15,73 @@
 
 <body>
     <div class="page_container">
-        <h1>Todo List</h1>
-        <div class="add_task_container">
-            <input type="text" id="add_task_input_field" placeholder="Task name" class="add_task_input_container">
-            <ul id="add_task_tags_list" class="add_task_tags_ul"></ul>
-            <div class="add_task_feature_container">
-                <input type="date" id="add_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
-                <select id="add_task_priority_dropdown">
-                    <option value="">Priority</option>
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                </select>
-                <div>
-                    <img src="assets/reminder.svg" alt="Reminder">
-                    <p>Reminders</p>
+        <div class="page_container_left">
+            <h1>Todo List</h1>
+            <div class="add_task_container">
+                <input type="text" id="add_task_input_field" placeholder="Task name" class="add_task_input_container">
+                <ul id="add_task_tags_list" class="add_task_tags_ul"></ul>
+                <div class="add_task_feature_container">
+                    <input type="date" id="add_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
+                    <select id="add_task_priority_dropdown">
+                        <option value="">Priority</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                    <div>
+                        <img src="assets/reminder.svg" alt="Reminder">
+                        <p>Reminders</p>
+                    </div>
+                    <select id="add_task_category_dropdown">
+                        <option value="null">Category</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Home">Home</option>
+                        <option value="Work">Work</option>
+                        <option value="Other">Other</option>
+                    </select>
                 </div>
-                <select id="add_task_category_dropdown">
-                    <option value="null">Category</option>
-                    <option value="Personal">Personal</option>
-                    <option value="Home">Home</option>
-                    <option value="Work">Work</option>
-                    <option value="Other">Other</option>
-                </select>
+                <div class="add_task_tags_container">
+                    <input type="text" id="add_task_tags_input_field" placeholder="Add Tags">
+                    <button id="add_task_tags_save_button">Add</button>
+                </div>
+                <button id="add_task_save_button">Save</button>
             </div>
-            <div class="add_task_tags_container">
-                <input type="text" id="add_task_tags_input_field" placeholder="Add Tags">
-                <button id="add_task_tags_save_button">Add</button>
-            </div>
-            <button id="add_task_save_button">Save</button>
-        </div>
-        <ul class="task_list_ul" id="task_list">
-            <ul class="task_list_ul" id="sub_task_list">
+            <ul class="task_list_ul" id="task_list">
+                <ul class="task_list_ul" id="sub_task_list">
+                </ul>
             </ul>
-        </ul>
+        </div>
+        <div class="page_container_left">
+            <h1>Filter</h1>
+            <div class="add_task_container">
+                <input type="text" id="search_input_field" placeholder="Search" class="add_task_input_container">
+                <div class="add_task_feature_container">
+                    <p>From:</p>
+                    <input type="date" id="filter_date_picker_from" value="" max="2050-12-31" min="2023-6-21"/>
+                    <p>To:</p>
+                    <input type="date" id="filter_date_picker_to" value="" max="2050-12-31" min="2023-6-21"/>
+                </div>
+                <div class="add_task_feature_container">
+                    <select id="sorting_dropdown">
+                        <option value="">Sort</option>
+                        <option value="DDA">Due Date Ascending</option>
+                        <option value="DDD">Due Date Descending</option>
+                        <option value="PHL">Priority High to Low</option>
+                        <option value="PLH">Priority Low to High</option>
+                    </select>
+                    <select id="filter_category_dropdown">
+                        <option value="null">Category</option>
+                        <option value="Personal">Personal</option>
+                        <option value="Home">Home</option>
+                        <option value="Work">Work</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button id="search_clear_button">Clear</button>
+            </div>
+            <ul class="task_list_ul" id="activity_list"></ul>
+        </div>
     </div>
-
     <script src="scripts/index.js"></script>
 </body>
 

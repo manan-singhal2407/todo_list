@@ -1,7 +1,13 @@
 const addTaskDatePicker = document.getElementById("add_task_date_picker");
 const addTaskPriorityDropdown = document.getElementById("add_task_priority_dropdown");
 const addTaskCategoryDropdown = document.getElementById("add_task_category_dropdown");
+const searchInputField = document.getElementById("search_input_field");
+const filterDatePickerFrom = document.getElementById("filter_date_picker_from");
+const filterDatePickerTo = document.getElementById("filter_date_picker_to");
+const sortingDropdown = document.getElementById("sorting_dropdown");
+const filterCategoryDropdown = document.getElementById("filter_category_dropdown");
 
+let activityList = [];
 let todoList = [];
 let tagsList = [];
 let due_date = null;
@@ -15,6 +21,30 @@ let editOrSubTaskDueDate = null;
 let editOrSubTaskPriority = "";
 let editOrSubTaskCategory = "";
 
+let sorting = "";
+let filterCategory = "";
+let search = "";
+let filterDateFrom = null;
+let filterDateTo = null;
+
+class LogType {
+    static TASK_ADDED;
+    static SUB_TASK_ADDED;
+    static TASK_DELETED;
+    static TASK_DELETED_FAILED;
+    static TASK_UPDATED;
+    static TASK_MARK_AS_DONE;
+    static TASK_MARK_AS_DONE_FAILED;
+    static TASK_MARK_AS_UNDONE;
+    static SUB_TASK_DELETED;
+    static SUB_TASK_UPDATED;
+    static SUB_TASK_MARK_AS_DONE;
+    static SUB_TASK_MARK_AS_UNDONE;
+    static SUB_TASK_MARK_AS_UNDONE_FAILED;
+}
+
+// todo mark done code will be done from remove task -> same way
+
 /* 
 TodoList Table: {
     task_name: String,
@@ -27,6 +57,14 @@ TodoList Table: {
     created_at: DateTime,
     sub_task: List<Int/Id>,
     mark_done: Boolean,
+    main_task_id: Int,
+}
+
+Activity Log Table: {
+    type: String,
+    created_at: Int,
+    id: Int,
+    taskName: String,
     main_task_id: Int,
 }
 
@@ -83,21 +121,27 @@ function addTaskToList() {
     const taskInputField = document.getElementById("add_task_input_field")
     const taskName = taskInputField.value.trim();
     if (taskName !== "") {
-        todoList.push(
-            {
-                task_name: taskName,
-                id: todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1,
-                tags: [...tagsList],
-                category: category,
-                priority: priority,
-                mark_done: false,
-                created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
-                reminder: [],
-                sub_task: [],
-                due_date: due_date,
-                main_task_id: -1
-            }
-        );
+        const id = todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1;
+        todoList.push({
+            task_name: taskName,
+            id: id,
+            tags: [...tagsList],
+            category: category,
+            priority: priority,
+            mark_done: false,
+            created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+            reminder: [],
+            sub_task: [],
+            due_date: due_date,
+            main_task_id: -1
+        });
+        activityList.push({
+            type: LogType.TASK_ADDED,
+            created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+            id: id,
+            task_name: taskName,
+            main_task_id: -1
+        });
         taskInputField.value = "";
         tagsList.splice(0, tagsList.length);
         due_date = null;
@@ -114,19 +158,35 @@ function addTaskToList() {
 function removeTaskFromListWithId(id) {
     const task = todoList.find((item) => item.id === id);
     if (task.main_task_id !== -1) {
-        for (let i = 0; i < todoList.length; i++) {
-            const todoItem = todoList[i];
-            const subTaskIndex = todoItem.sub_task.indexOf(task.id);
-            if (subTaskIndex !== -1) {
-                todoItem.sub_task.splice(subTaskIndex, 1);
-            }
-        }
+        const todoListItem = todoList.find((item) => item.id === task.main_task_id);
+        todoListItem.sub_task.splice(todoListItem.sub_task.indexOf(id), 1);
         todoList = todoList.filter(task => task.id !== id);
+        activityList.push({
+            type: LogType.SUB_TASK_DELETED,
+            created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+            id: id,
+            task_name: task.task_name,
+            main_task_id: task.main_task_id
+        });
     } else {
         if (task.sub_task.length === 0) {
             todoList = todoList.filter(task => task.id !== id);
+            activityList.push({
+                type: LogType.TASK_DELETED,
+                created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                id: id,
+                task_name: task.task_name,
+                main_task_id: -1
+            });
         } else {
-            // todo show message that sub task exists
+            activityList.push({
+                type: LogType.TASK_DELETED_FAILED,
+                created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                id: id,
+                task_name: task.task_name,
+                main_task_id: -1
+            });
+            alert("You can't delete a task with active sub task");
         }
     }
     renderList();
@@ -156,7 +216,24 @@ function updateTaskToList(id, isEditTask) {
             task.tags = [...editOrSubTaskTagsList];
             task.category = editOrSubTaskCategory;
             task.priority = editOrSubTaskPriority;
-            task.due_date = editOrSubTaskDueDate
+            task.due_date = editOrSubTaskDueDate;
+            if (task.main_task_id === -1) {
+                activityList.push({
+                    type: LogType.TASK_UPDATED,
+                    created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                    id: id,
+                    task_name: task.task_name,
+                    main_task_id: -1
+                });
+            } else {
+                activityList.push({
+                    type: LogType.SUB_TASK_UPDATED,
+                    created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                    id: id,
+                    task_name: task.task_name,
+                    main_task_id: task.main_task_id
+                });
+            }
         } else {
             const newTaskId = todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1;
             todoList.push(
@@ -174,6 +251,13 @@ function updateTaskToList(id, isEditTask) {
                     main_task_id: id
                 }
             );
+            activityList.push({
+                type: LogType.SUB_TASK_ADDED,
+                created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+                id: newTaskId,
+                task_name: taskName,
+                main_task_id: id
+            });
             task.sub_task.push(newTaskId);
         }
     }
@@ -190,6 +274,27 @@ function updateTaskToList(id, isEditTask) {
 
 function changeMarkTaskPosition(id) {
     const todoListItem = todoList.find((item) => item.id === id);
+    if (todoListItem.main_task_id === -1) {
+        if (todoListItem.sub_task.length !== 0) {
+            
+        } else {
+
+        }
+    } else {
+        
+    }
+
+
+
+    activityList.push({
+        type: todoListItem.mark_done 
+        ? todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_UNDONE : LogType.SUB_TASK_MARK_AS_UNDONE
+        : todoListItem.main_task_id === -1 ? LogType.TASK_MARK_AS_DONE : LogType.SUB_TASK_MARK_AS_DONE,
+        created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
+        id: id,
+        task_name: todoListItem.task_name,
+        main_task_id: todoListItem.main_task_id
+    });
     todoListItem.mark_done = !todoListItem.mark_done;
     renderList();
 }
@@ -296,7 +401,7 @@ function itemLayout(li, task) {
 
     rightContentText.appendChild(rightContentCategory);
     rightContentText.appendChild(rightContentPriority);
-    
+
     rightContent.appendChild(rightContentActions);
     rightContent.appendChild(rightContentDueDate);
     rightContent.appendChild(rightContentText);
@@ -437,8 +542,12 @@ function editOrAddSubTaskLayout(div, task, isEditTask) {
         editOrSubTaskDueDate = task.due_date;
         editOrSubTaskPriority = task.priority;
         editOrSubTaskCategory = task.category;
-        // todo not getting rendered on one go
-        renderEditOrAddSubTaskTagsList(task);
+
+        const startTime = new Date().getTime() + 100;
+        const callback = () => {
+            renderEditOrAddSubTaskTagsList(task);
+        };
+        setTimeout(callback, startTime);
     }
     editOrAddSubTaskFeatureDatePicker.addEventListener("change", function () {
         editOrSubTaskDueDate = this.value;
@@ -463,7 +572,66 @@ function renderList() {
     const taskListElement = document.getElementById("task_list");
     taskListElement.innerHTML = "";
 
-    const tasksToShow = todoList.filter(task => !task.mark_done && task.main_task_id === -1);
+    var showSubTask = true;
+    var showDoneTask = false;
+    if (showDoneTask || sorting !== "" || search !== "" || filterDateFrom !== null || filterDateTo !== null) {
+        showSubTask = false;
+    }
+
+    var tasksToShow = [...todoList];
+    if (showSubTask) {
+        tasksToShow = tasksToShow.filter(task => task.main_task_id === -1);
+    }
+    if (filterCategory !== "" && filterCategory !== null) {
+        tasksToShow = tasksToShow.filter(task => task.category === filterCategory);
+    }
+    if (filterDateFrom !== null) {
+        tasksToShow = tasksToShow.filter(task => task.due_date >= filterDateFrom);
+    }
+    if (filterDateTo !== null) {
+        tasksToShow = tasksToShow.filter(task => task.due_date <= filterDateTo);
+    }
+
+    if (sorting === "PLH") {
+        const priorityMap = {
+            "Low": -1,
+            "Medium": 0,
+            "High": 1
+        };
+        tasksToShow = tasksToShow.sort((a, b) => {
+            const priorityA = priorityMap[a.priority];
+            const priorityB = priorityMap[b.priority];
+            return priorityA - priorityB;
+        });
+        tasksToShow = tasksToShow.filter(task => task.priority !== "");
+    } else if (sorting === "PHL") {
+        const priorityMap = {
+            "High": -1,
+            "Medium": 0,
+            "Low": 1
+        };
+        tasksToShow = tasksToShow.sort((a, b) => {
+            const priorityA = priorityMap[a.priority];
+            const priorityB = priorityMap[b.priority];
+            return priorityA - priorityB;
+        });
+        tasksToShow = tasksToShow.filter(task => task.priority !== "");
+    } else if (sorting === "DDD") {
+        tasksToShow = tasksToShow.sort((a, b) => {
+            const dateA = new Date(a.due_date);
+            const dateB = new Date(b.due_date);
+            return dateB - dateA;
+        });
+        tasksToShow = tasksToShow.filter(task => task.due_date !== null);
+    } else if (sorting === "DDA") {
+        tasksToShow = tasksToShow.sort((a, b) => {
+            const dateA = new Date(a.due_date);
+            const dateB = new Date(b.due_date);
+            return dateA - dateB;
+        });
+        tasksToShow = tasksToShow.filter(task => task.due_date !== null);
+    }
+
     tasksToShow.forEach(task => {
         if (editId === task.id) {
             const div = document.createElement("div");
@@ -481,24 +649,83 @@ function renderList() {
             editOrAddSubTaskLayout(div, task, false);
             taskListElement.appendChild(div);
         }
-        
-        task.sub_task.forEach(subTaskId => {
-            const todoListItem = todoList.find((item) => item.id === subTaskId);
-            if (!todoListItem.mark_done) {
-                if (editId === todoListItem.id) {
-                    const sub_div = document.createElement("div");
-                    editOrAddSubTaskLayout(sub_div, todoListItem, true);
-                    taskListElement.appendChild(sub_div);
-                } else {
-                    const sub_li = document.createElement("li");
-                    sub_li.classList.add("task_sub_list_li");
-                    itemLayout(sub_li, todoListItem);
-                    taskListElement.appendChild(sub_li);
+
+        if (showSubTask) {
+            task.sub_task.forEach(subTaskId => {
+                const todoListItem = todoList.find((item) => item.id === subTaskId);
+                if (!todoListItem.mark_done) {
+                    if (editId === todoListItem.id) {
+                        const sub_div = document.createElement("div");
+                        editOrAddSubTaskLayout(sub_div, todoListItem, true);
+                        taskListElement.appendChild(sub_div);
+                    } else {
+                        const sub_li = document.createElement("li");
+                        sub_li.classList.add("task_sub_list_li");
+                        itemLayout(sub_li, todoListItem);
+                        taskListElement.appendChild(sub_li);
+                    }
                 }
-            }
-        });
+            });
+        }
     });
     storeTodoListOnLocalStorage();
+    renderActivityList();
+}
+
+function renderActivityList() {
+    const activityListElement = document.getElementById("activity_list");
+    activityListElement.innerHTML = "";
+
+    // const tasksToShow = todoList.filter(task => !task.mark_done && task.main_task_id === -1);
+    // tasksToShow.forEach(task => {
+    //     if (editId === task.id) {
+    //         const div = document.createElement("div");
+    //         editOrAddSubTaskLayout(div, task, true);
+    //         taskListElement.appendChild(div);
+    //     } else {
+    //         const li = document.createElement("li");
+    //         li.classList.add("task_list_ul_li");
+    //         itemLayout(li, task);
+    //         taskListElement.appendChild(li);
+    //     }
+
+    //     if (addSubTaskId === task.id) {
+    //         const div = document.createElement("div");
+    //         editOrAddSubTaskLayout(div, task, false);
+    //         taskListElement.appendChild(div);
+    //     }
+
+    //     task.sub_task.forEach(subTaskId => {
+    //         const todoListItem = todoList.find((item) => item.id === subTaskId);
+    //         if (!todoListItem.mark_done) {
+    //             if (editId === todoListItem.id) {
+    //                 const sub_div = document.createElement("div");
+    //                 editOrAddSubTaskLayout(sub_div, todoListItem, true);
+    //                 taskListElement.appendChild(sub_div);
+    //             } else {
+    //                 const sub_li = document.createElement("li");
+    //                 sub_li.classList.add("task_sub_list_li");
+    //                 itemLayout(sub_li, todoListItem);
+    //                 taskListElement.appendChild(sub_li);
+    //             }
+    //         }
+    //     });
+    // });
+    localStorage.setItem("activity_list", JSON.stringify(activityList));
+}
+
+function clearFilterOption() {
+    sorting = "";
+    filterCategory = "";
+    search = "";
+    filterDateFrom = null;
+    filterDateTo = null;
+    searchInputField.value = "";
+    filterDatePickerFrom.value = null;
+    filterDatePickerTo.value = null;
+    sortingDropdown.selectedIndex = 0;
+    filterCategoryDropdown.selectedIndex = 0;
+    renderList();
 }
 
 const today = new Date().toISOString().split('T')[0];
@@ -512,8 +739,39 @@ addTaskPriorityDropdown.addEventListener("change", function () {
 addTaskCategoryDropdown.addEventListener("change", function () {
     category = this.value;
 });
+searchInputField.addEventListener("input", function () {
+    search = this.value;
+    renderList();
+});
+filterDatePickerFrom.addEventListener("change", function () {
+    filterDateFrom = this.value;
+    if (filterDateTo === null) {
+        filterDatePickerTo.min = new Date(this.value).toISOString().split('T')[0];
+    }
+    renderList();
+});
+filterDatePickerTo.addEventListener("change", function () {
+    filterDateTo = this.value;
+    if (filterDateFrom === null) {
+        filterDatePickerFrom.max = new Date(this.value).toISOString().split('T')[0];
+    }
+    renderList();
+});
+sortingDropdown.addEventListener("change", function () {
+    sorting = this.value;
+    renderList();
+});
+filterCategoryDropdown.addEventListener("change", function () {
+    filterCategory = this.value;
+    renderList();
+});
 document.getElementById("add_task_tags_save_button").addEventListener("click", addTaskTagsToList);
 document.getElementById("add_task_save_button").addEventListener("click", addTaskToList);
+document.getElementById("search_clear_button").addEventListener("click", clearFilterOption);
+
+if (localStorage.getItem("activity_list") !== null) {
+    activityList = JSON.parse(localStorage.getItem("activity_list"));
+}
 
 let localStorageList = localStorage.getItem("todo_list");
 if (localStorageList !== null || localStorageList === "") {
