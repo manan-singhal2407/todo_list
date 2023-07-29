@@ -15,6 +15,12 @@ html {
     border: none;
 }
 
+.dragging {
+    background-color: lightblue;
+    transform: scale(1.05);
+    opacity: 0.8;
+}
+
 .page_container {
     width: 100vw;
     min-height: 100vh;
@@ -67,7 +73,7 @@ h1 {
     max-width: 500px;
 }
 
-.add_task_tags_ul  li {
+.add_task_tags_ul li {
     display: flex;
     margin: 5px;
     width: fit-content;

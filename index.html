@@ -20,6 +20,7 @@
             <div class="add_task_container">
                 <input type="text" id="add_task_input_field" placeholder="Task name" class="add_task_input_container">
                 <ul id="add_task_tags_list" class="add_task_tags_ul"></ul>
+                <ul id="add_task_reminder_list" class="add_task_tags_ul"></ul>
                 <div class="add_task_feature_container">
                     <input type="date" id="add_task_date_picker" value="" max="2050-12-31" min="2023-6-21"/>
                     <select id="add_task_priority_dropdown">
@@ -28,10 +29,7 @@
                         <option value="Medium">Medium</option>
                         <option value="High">High</option>
                     </select>
-                    <div>
-                        <img src="assets/reminder.svg" alt="Reminder">
-                        <p>Reminders</p>
-                    </div>
+                    <input type="datetime-local" id="add_task_reminder" value="">
                     <select id="add_task_category_dropdown">
                         <option value="null">Category</option>
                         <option value="Personal">Personal</option>

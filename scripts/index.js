@@ -1,4 +1,6 @@
+const taskInputField = document.getElementById("add_task_input_field");
 const addTaskDatePicker = document.getElementById("add_task_date_picker");
+const addTaskReminder = document.getElementById("add_task_reminder");
 const addTaskPriorityDropdown = document.getElementById("add_task_priority_dropdown");
 const addTaskCategoryDropdown = document.getElementById("add_task_category_dropdown");
 const searchInputField = document.getElementById("search_input_field");
@@ -11,6 +13,7 @@ const showSpecificDropdown = document.getElementById("show_specific_dropdown");
 let activityList = [];
 let todoList = [];
 let tagsList = [];
+let reminderList = [];
 let due_date = null;
 let priority = "";
 let category = "";
@@ -86,8 +89,29 @@ function renderTaskTagsList() {
     });
 }
 
+function removeReminderFromList(dateTime) {
+    reminderList = reminderList.filter(reminders => reminders.date_time !== dateTime);
+    renderTaskReminderList();
+}
+
+function renderTaskReminderList() {
+    const reminderListElement = document.getElementById("add_task_reminder_list");
+    reminderListElement.innerHTML = "";
+
+    reminderList.forEach(reminder => {
+        const li = document.createElement("li");
+        li.textContent = reminder.date_time;
+        const deleteTags = document.createElement('img');
+        deleteTags.setAttribute('src', 'assets/ic_close.svg');
+        deleteTags.setAttribute('alt', 'Delete');
+        deleteTags.setAttribute('cursor', 'pointer');
+        deleteTags.setAttribute('onClick', `removeReminderFromList('${reminder.date_time}')`);
+        li.appendChild(deleteTags);
+        reminderListElement.appendChild(li);
+    });
+}
+
 function addTaskToList() {
-    const taskInputField = document.getElementById("add_task_input_field")
     const taskName = taskInputField.value.trim();
     if (taskName !== "") {
         const id = todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1;
@@ -99,7 +123,7 @@ function addTaskToList() {
             priority: priority,
             mark_done: false,
             created_at: new Date().toLocaleString('en-US', { dateStyle: 'short', timeStyle: 'short' }),
-            reminder: [],
+            reminder: [...reminderList],
             sub_task: [],
             due_date: due_date,
             main_task_id: -1
@@ -113,6 +137,7 @@ function addTaskToList() {
         });
         taskInputField.value = "";
         tagsList.splice(0, tagsList.length);
+        reminderList.splice(0, reminderList.length);
         due_date = null;
         category = "";
         priority = "";
@@ -507,27 +532,27 @@ function editOrAddSubTaskLayout(div, task, isEditTask, mainTask) {
     if (mainTask) {
         const editOrAddSubTaskCategoryPriority = document.createElement('select');
         editOrAddSubTaskCategoryPriority.setAttribute('id', 'edit_and_new_sub_task_category_dropdown');
-    
+
         const optionCategory = document.createElement('option');
         optionCategory.value = "";
         optionCategory.innerText = "Category";
-    
+
         const optionPersonal = document.createElement('option');
         optionPersonal.value = "Personal";
         optionPersonal.innerText = "Personal";
-    
+
         const optionHome = document.createElement('option');
         optionHome.value = "Home";
         optionHome.innerText = "Home";
-    
+
         const optionWork = document.createElement('option');
         optionWork.value = "Work";
         optionWork.innerText = "Work";
-    
+
         const optionOther = document.createElement('option');
         optionOther.value = "Other";
         optionOther.innerText = "Other";
-    
+
         editOrAddSubTaskCategoryPriority.appendChild(optionCategory);
         editOrAddSubTaskCategoryPriority.appendChild(optionPersonal);
         editOrAddSubTaskCategoryPriority.appendChild(optionHome);
@@ -612,9 +637,29 @@ function checkIfSearchWordsInTask(searchWords, contentTask) {
 
 function renderList() {
     const taskListElement = document.getElementById("task_list");
+    taskListElement.addEventListener('dragstart', (e) => {
+        currentItem = e.target;
+        e.dataTransfer.setData('text/plain', '');
+        currentItem.classList.add('dragging');
+    });
+
+    taskListElement.addEventListener('dragend', (e) => {
+        currentItem.classList.remove('dragging');
+    });
+
+    taskListElement.addEventListener('dragover', (e) => {
+        e.preventDefault();
+    });
+
+    taskListElement.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const target = e.target;
+        if (target.tagName === 'LI') {
+            taskListElement.insertBefore(currentItem, target.nextSibling);
+        }
+    });
     taskListElement.innerHTML = "";
 
-    console.log(todoList);
     var showSubTask = true;
     var showDoneTask = false;
     if (showDoneTask || sorting !== "" || search !== "" || filterDateFrom !== null || filterDateTo !== null || showType !== "") {
@@ -700,6 +745,7 @@ function renderList() {
             taskListElement.appendChild(div);
         } else {
             const li = document.createElement("li");
+            // li.setAttribute("draggable", true);
             li.classList.add("task_list_ul_li");
             itemLayout(li, task);
             taskListElement.appendChild(li);
@@ -721,6 +767,7 @@ function renderList() {
                         taskListElement.appendChild(sub_div);
                     } else {
                         const sub_li = document.createElement("li");
+                        // li.setAttribute("draggable", true);
                         sub_li.classList.add("task_sub_list_li");
                         itemLayout(sub_li, todoListItem);
                         taskListElement.appendChild(sub_li);
@@ -797,16 +844,86 @@ function clearFilterOption() {
     renderList();
 }
 
-const today = new Date().toISOString().split('T')[0];
-addTaskDatePicker.min = today;
+function runReminder() {
+    for (let i=0; i<todoList.length; i++) {
+        var reminders = [...todoList[i].reminder];
+        for (let j=0; j<reminders.length; j++) {
+            const currentDateTime = new Date();
+            const reminderDateTime = new Date(todoList[i].reminder[j].date_time);
+            if (todoList[i].reminder[j].is_done === false && -15 < reminderDateTime - currentDateTime < 0) {
+                todoList[i].reminder[j].is_done = true;
+                alert("Reminder: It's time for the task -", todoList[i].task_name);
+            }
+        }
+    }
+}
+
+const today = new Date();
+addTaskDatePicker.min = today.toISOString().split('T')[0];
 addTaskDatePicker.addEventListener("change", function () {
     due_date = this.value;
+});
+addTaskReminder.min = today.toISOString().slice(0, 16);
+addTaskReminder.addEventListener("change", function () {
+    const selectedDateTime = new Date(this.value);
+    const currentDateTime = new Date();
+    if (selectedDateTime > currentDateTime) {
+        reminderList.push({
+            "date_time": this.value,
+            "is_done": false
+        });
+        renderTaskReminderList();
+    }
 });
 addTaskPriorityDropdown.addEventListener("change", function () {
     priority = this.value;
 });
 addTaskCategoryDropdown.addEventListener("change", function () {
     category = this.value;
+});
+taskInputField.addEventListener("input", function () {
+    const dateFormatRegex = /(?:by)\s+([0-9]{1,2}[-/. ][0-9]{1,2}[-/. ](?:[0-9]{2}|[0-9]{4}))$/i;
+    const matchDateFormat = taskInputField.value.trim().match(dateFormatRegex);
+
+    if (matchDateFormat) {
+        const dateFormat = matchDateFormat[1];
+        const parts = dateFormat.split(/[\/.-]/);
+        if (parts.length === 3) {
+            const year = parseInt(parts[2].length === 2 ? "20" + parts[2] : parts[2]);
+            const month = parseInt(parts[1]) - 1;
+            const day = parseInt(parts[0]) + 1;
+            const date = new Date(year, month, day);
+            if (date >= today) {
+                addTaskDatePicker.value = date.toISOString().split('T')[0];
+                due_date = addTaskDatePicker.value;
+            } else {
+                addTaskDatePicker.value = null;
+                due_date = null;
+            }
+        } else {
+            addTaskDatePicker.value = null;
+            due_date = null;
+        }
+    } else {
+        const words = taskInputField.value.trim().split(' ');
+        if (words.length > 2) {
+            const today = new Date();
+            if (words[words.length - 2] === 'by' && words[words.length - 1] === 'tomorrow') {
+                today.setDate(today.getDate() + 1);
+                addTaskDatePicker.value = today.toISOString().split('T')[0];
+                due_date = addTaskDatePicker.value;
+            } else if (words[words.length - 2] === 'by' && words[words.length - 1].toLowerCase() === 'today') {
+                addTaskDatePicker.value = today.toISOString().split('T')[0];
+                due_date = addTaskDatePicker.value;
+            } else {
+                addTaskDatePicker.value = null;
+                due_date = null;
+            }
+        } else {
+            addTaskDatePicker.value = null;
+            due_date = null;
+        }
+    }
 });
 searchInputField.addEventListener("input", function () {
     search = this.value;
@@ -834,7 +951,7 @@ filterCategoryDropdown.addEventListener("change", function () {
     filterCategory = this.value;
     renderList();
 });
-showSpecificDropdown.addEventListener("change", function() {
+showSpecificDropdown.addEventListener("change", function () {
     showType = this.value;
     renderList();
 })
@@ -852,3 +969,4 @@ if (localStorageList !== null || localStorageList === "") {
 } else {
     renderList();
 }
+setInterval(runReminder, 10000);
