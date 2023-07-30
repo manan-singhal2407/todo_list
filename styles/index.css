@@ -15,12 +15,6 @@ html {
     border: none;
 }
 
-.dragging {
-    background-color: lightblue;
-    transform: scale(1.05);
-    opacity: 0.8;
-}
-
 .page_container {
     width: 100vw;
     min-height: 100vh;
@@ -208,6 +202,11 @@ input:focus {
     margin-bottom: 20px;
     align-items: start;
     background-color: antiquewhite;
+}
+
+.task_list_ul_li_dragging {
+    cursor: grabbing;
+    opacity: 0.8;
 }
 
 .activity_list_ul_li {

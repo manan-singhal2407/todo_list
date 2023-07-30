@@ -114,7 +114,7 @@ function renderTaskReminderList() {
 function addTaskToList() {
     const taskName = taskInputField.value.trim();
     if (taskName !== "") {
-        const id = todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1;
+        const id = todoList.length === 0 ? 0 : todoList[todoList.length - 1].id + 1;
         todoList.push({
             task_name: taskName,
             id: id,
@@ -229,7 +229,7 @@ function updateTaskToList(id, isEditTask) {
                 });
             }
         } else {
-            const newTaskId = todoList.length === 0 ? 1 : todoList[todoList.length - 1].id + 1;
+            const newTaskId = todoList.length === 0 ? 0 : todoList[todoList.length - 1].id + 1;
             todoList.push(
                 {
                     task_name: taskName,
@@ -655,6 +655,34 @@ function renderList() {
         e.preventDefault();
         const target = e.target;
         if (target.tagName === 'LI') {
+            const targetId = parseInt(target.getAttribute('data-id'));
+            var currentIndex = todoList.findIndex(item => item.id === parseInt(currentItem.getAttribute('data-id')));
+            var targetIndex = todoList.findIndex(item => item.id === targetId);
+
+            if (todoList[currentIndex].main_task_id === -1) {
+                if (todoList[targetIndex].main_task_id === -1) {
+                    // todoList[todoList[currentIndex].main_task_id].sub_task.splice(todoList[todoList[currentIndex].main_task_id].sub_task.indexOf(currentIndex), 1);
+                    // todoList[targetIndex].sub_task.unshift(currentIndex);
+                    // todoList[currentIndex].main_task_id = targetIndex;
+                } else {
+                    // todoList[todoList[currentIndex].main_task_id].sub_task.splice(todoList[todoList[currentIndex].main_task_id].sub_task.indexOf(currentIndex), 1);
+                    // todoList[todoList[targetIndex].main_task_id].sub_task.push(currentIndex);
+                    // todoList[currentIndex].main_task_id = todoList[targetIndex].main_task_id;
+                }
+            } else {
+                if (todoList[targetIndex].main_task_id === -1) {
+                    todoList[todoList[currentIndex].main_task_id].sub_task.splice(todoList[todoList[currentIndex].main_task_id].sub_task.indexOf(currentIndex), 1);
+                    todoList[targetIndex].sub_task.unshift(currentIndex);
+                    todoList[currentIndex].main_task_id = targetIndex;
+                } else {
+                    // todo add element in sub-task after that task only.
+                    todoList[todoList[currentIndex].main_task_id].sub_task.splice(todoList[todoList[currentIndex].main_task_id].sub_task.indexOf(currentIndex), 1);
+                    todoList[todoList[targetIndex].main_task_id].sub_task.push(currentIndex);
+                    todoList[currentIndex].main_task_id = todoList[targetIndex].main_task_id;
+                }
+            }
+            storeTodoListOnLocalStorage();
+            console.log(todoList);
             taskListElement.insertBefore(currentItem, target.nextSibling);
         }
     });
@@ -745,8 +773,9 @@ function renderList() {
             taskListElement.appendChild(div);
         } else {
             const li = document.createElement("li");
-            // li.setAttribute("draggable", true);
             li.classList.add("task_list_ul_li");
+            li.setAttribute("draggable", true);
+            li.setAttribute("data-id", task.id);
             itemLayout(li, task);
             taskListElement.appendChild(li);
         }
@@ -767,8 +796,9 @@ function renderList() {
                         taskListElement.appendChild(sub_div);
                     } else {
                         const sub_li = document.createElement("li");
-                        // li.setAttribute("draggable", true);
                         sub_li.classList.add("task_sub_list_li");
+                        sub_li.setAttribute("draggable", true);
+                        sub_li.setAttribute("data-id", todoListItem.id);
                         itemLayout(sub_li, todoListItem);
                         taskListElement.appendChild(sub_li);
                     }
@@ -845,9 +875,9 @@ function clearFilterOption() {
 }
 
 function runReminder() {
-    for (let i=0; i<todoList.length; i++) {
+    for (let i = 0; i < todoList.length; i++) {
         var reminders = [...todoList[i].reminder];
-        for (let j=0; j<reminders.length; j++) {
+        for (let j = 0; j < reminders.length; j++) {
             const currentDateTime = new Date();
             const reminderDateTime = new Date(todoList[i].reminder[j].date_time);
             if (todoList[i].reminder[j].is_done === false && -15 < reminderDateTime - currentDateTime < 0) {

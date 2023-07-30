@@ -16,8 +16,6 @@
 - Backlogs Task
 - Search based on task name, tags, priority, category with partial search enabled.
 - Activity Logs: Actions performed by user
-
-## Missing Features
 - Reminder
+- Auto-detect Date
 - Drag Drop
-- Auto detect date picker(task by tomorrow)
